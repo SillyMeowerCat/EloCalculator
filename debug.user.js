@@ -12,7 +12,7 @@
 
 (function () {
     'use strict';
-    console.log("ELO Script Started")
+    console.log("ELO Script Started: ", typeof window.fetch)
     // Change ts if Im wrong
     const K = 32;
 
@@ -23,11 +23,13 @@
     // (Removed Reset) - thats why some code is missing
     // Renders elo widget thingy
     function renderPanel() {
+        console.log('ELO: renderPanel called, body:', !!document.body, 'existing el:', !!document.getElementById('el-elo'));
         const el = document.getElementById('el-elo') ?? (() => {
             const d = document.createElement('div');
             d.id = 'el-elo';
             Object.assign(d.style, { position:'fixed', top:'12px', right:'12px', zIndex:'2147483647', background:'rgba(15,15,20,.92)', backdropFilter:'blur(8px)', border:'1px solid rgba(255,255,255,.15)', borderRadius:'10px', padding:'10px 14px', color:'#fff', font:'13px/1.65 system-ui,sans-serif', minWidth:'200px', pointerEvents:'none' });
-            document.body.appendChild(d);
+            (document.body ?? document.documentElement).appendChild(d);
+            console.log('ELO: panel created');
             return d;
         })();
         // the html for thw widget
@@ -47,6 +49,7 @@
         const resp = await _fetch(...args);
         const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url ?? '');
 
+        if (url.includes('/api/v4/')) console.log('ELO: api/v4 fetch:', url);
         if (url.includes('/api/v4/player-identities/')) {
             console.log('ELO: player-identities intercepted:', url);
             resp.clone().json().then(async data => {
@@ -72,8 +75,6 @@
                     renderPanel();
                 } catch (e) { console.error('ELO: rating fetch failed:', e); }
             }).catch(e => console.error('ELO: identity JSON parse failed:', e));
-        } else {
-            console.log('ELO: fetch (ignored):');
         }
 
         return resp;
