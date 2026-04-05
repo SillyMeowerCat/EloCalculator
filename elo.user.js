@@ -4,7 +4,7 @@
 // @version      1.0.0
 // @description  Show ELO changes for GeoGuessr duels
 // @author       Sidecans
-// @match        https://www.geoguessr.com/*
+// @match        *://*.geoguessr.com/*
 // @icon         https://www.geoguessr.com/favicon.ico
 // @run-at       document-start
 // @grant        none
