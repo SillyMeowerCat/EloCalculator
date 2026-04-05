@@ -12,22 +12,15 @@
 
 (function () {
     'use strict';
+    console.log("ELO Script Started")
     // Change ts if Im wrong
     const K = 32;
-    console.log("ELO Calculator Script started")
 
     // Formula to calculate elo given two elos a and b
     const eloChange = (a, b) => { const e = 1 / (1 + 10 ** ((b - a) / 400)); return { gain: Math.round(K * (1 - e)), loss: Math.round(K * e) }; };
     const _fetch = window.fetch.bind(window);
-    // List of players
     const players = new Map();
-
-    // Helper function to reset players on new intercept detection
-    function reset() {
-        players.clear();
-        document.getElementById('el-elo')?.remove();
-    }
-
+    // (Removed Reset) - thats why some code is missing
     // Renders elo widget thingy
     function renderPanel() {
         const el = document.getElementById('el-elo') ?? (() => {
@@ -58,13 +51,18 @@
             resp.clone().json().then(async data => {
                 const userId = data.player?.id ?? url.split('/').pop();
                 const nick = data.player?.nick ?? userId.slice(0, 8);
-                if (players.has(userId) || players.size >= 2) reset();
+                // replaced weird 2 player cap logic with selective removing map elements.
+                if (players.has(userId)) {
+                    players.delete(userId);
+                } else if (players.size >= 2) {
+                    players.delete(players.keys().next().value); 
+                }
                 players.set(userId, { nick, elo: null });
                 renderPanel();
                 try {
                     const r = await _fetch(`https://www.geoguessr.com/api/v4/ranked-system/progress/${userId}`, { credentials: 'include' });
                     const d = await r.json();
-                    players.get(userId).elo = d?.rating ?? null;
+                    if (players.has(userId)) players.get(userId).elo = d?.rating ?? null;
                     renderPanel();
                 } catch {}
             }).catch(() => {});
